@@ -7,13 +7,18 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using QRok.Models;
 
 namespace QRok
 {
     public class Startup
     {
+        private static string _connection = null;
+        public static string ConnectionString { get { return _connection; } }
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -31,6 +36,7 @@ namespace QRok
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            services.AddDbContext<QRokContext>(options => options.UseSqlServer(Configuration["ConnectionStrings:DefaultConnection"]));
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
