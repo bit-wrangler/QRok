@@ -18,6 +18,9 @@ namespace QRok.Models
 
         public IList<SurveyOption> SurveyOptions { get; set; }
 
+        public DateTime CloseDateTime { get; set; }
+        public DateTime DeleteDateTime { get; set; }
+
         public Survey()
         {
             SurveyOptions = new List<SurveyOption>();
