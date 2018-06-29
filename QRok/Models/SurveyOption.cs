@@ -6,21 +6,18 @@ using System.Threading.Tasks;
 
 namespace QRok.Models
 {
-    public class Survey
+    public class SurveyOption
     {
-        public int Id { get; set; }
+        public int SurveyId { get; set; }
+        public Survey Survey { get; set; }
 
-        public Guid Guid { get; set; }
+        public int OptionNumber { get; set; }
 
         [Required]
         [MaxLength(255)]
         public string Title { get; set; }
 
-        public IList<SurveyOption> SurveyOptions { get; set; }
+        public int Count { get; set; }
 
-        public Survey()
-        {
-            SurveyOptions = new List<SurveyOption>();
-        }
     }
 }
