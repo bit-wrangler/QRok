@@ -1,0 +1,99 @@
+﻿@model QRok.Models.Survey
+@{
+	ViewData["Title"] = "Index";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<script type="text/javascript" src="~/js/knockout-3.4.2.js"></script>
+
+@*public int Id { get; set; }
+
+        public Guid Guid { get; set; }
+
+        [Required]
+        [MaxLength(255)]
+        public string Title { get; set; }
+
+        public IList<SurveyOption>
+	SurveyOptions { get; set; }
+
+	public DateTime CloseDateTime { get; set; }
+	public DateTime DeleteDateTime { get; set; }*@
+
+<script type="text/javascript" src="~/js/KOViewModels/SurveyOption.js"></script>
+<script type="text/javascript" src="~/js/KOViewModels/Survey.js"></script>
+
+<script>
+	var arg = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+	console.log(arg);
+	function SurveysIndexViewModel() {
+		var self = this;
+		self.Survey = new Survey(arg);
+		self.addOption = function () {
+			self.Survey.SurveyOptions.push(new SurveyOption(null));
+		}
+		self.removeOption = function (option) {
+			self.Survey.SurveyOptions.remove(option);
+		}
+		self.submit = function () {
+
+			for (var i = 0; i < self.Survey.SurveyOptions().length; i++) {
+				self.Survey.SurveyOptions()[i].OptionNumber(i + 1);
+			}
+			var form = document.getElementById("form");
+			var hiddenField = document.createElement("input");
+			hiddenField.setAttribute("type", "hidden");
+			hiddenField.setAttribute("name", "data");
+			hiddenField.setAttribute("value", ko.toJSON(self.Survey));
+
+			form.appendChild(hiddenField);
+			console.log(ko.toJSON(self.Survey));
+			return true;
+		}
+	}
+</script>
+
+
+	<h2>Let's create a survey!</h2>
+
+	@using (@Html.BeginForm("Create", "Surveys", null, FormMethod.Post, true, new { data_bind = "submit: submit" , id="form" }))
+	{
+		<div>
+			<div class="form-group">
+				@Html.LabelFor(m => m.Title)
+				@Html.TextBoxFor(m => m.Title, new { @class = "form-control", placeholder = "Which is better?", data_bind="value: Survey.Title" })
+			</div>
+			<div class="form-group">
+				<strong>Options</strong>
+				<table>
+					<tr>
+						<td></td>
+						<td>
+							<button data-bind="click: addOption" class="btn btn-primary btn-block" type="button">Add</button>
+						</td>
+					</tr>
+					<tbody data-bind="foreach: Survey.SurveyOptions">
+					<td><input data-bind="value: Title"></input></td>
+					<td><button class="btn btn-danger" type="button" data-bind="click: $root.removeOption">Remove</button></td>
+					</tbody>
+				</table>
+
+			</div>
+
+			@*<div>@Model.Guid.ToString()</div>*@
+
+			<button type="submit">:)</button>
+
+		</div>
+	}
+
+
+	<table>
+		<tr>
+			<td><strong></strong></td>
+		</tr>
+	</table>
+
+	<script>
+
+	ko.applyBindings(new SurveysIndexViewModel());
+	</script>
