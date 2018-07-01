@@ -1,8 +1,56 @@
 ﻿@model QRok.Models.Survey
 @{
-    ViewData["Title"] = "View";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+	ViewData["Title"] = "View";
+	Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <h2>@Model.Title</h2>
 
+<button type="button" id="mymodal" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
+	Share via QR Code
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="myModalLabel">Scan to participate in "@Model.Title"</h4>
+			</div>
+			<div class="modal-body">
+				<canvas id="qrcode-canvas"></canvas>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript" src="~/js/qrcodegen.js"></script>
+
+<script type="text/javascript">
+	var ecl = qrcodegen.QrCode.Ecc.MEDIUM;
+	var text = 'https://localhost:44322/Surveys/Details/id=%ID%&Guid=%GUID%'
+		.replace('%GUID%', '@(Model.Guid.ToString())')
+		.replace('%ID%', '@(Model.Id.ToString())');
+	var segs = qrcodegen.QrSegment.makeSegments(text);
+	var minVer = 1;
+	var maxVer = 40;
+	var mask = -1;
+	var boostEcc = false;
+	var qr = qrcodegen.QrCode.encodeSegments(segs, ecl, minVer, maxVer, mask, boostEcc);
+
+	var border = 1;
+	var canvas = document.getElementById("qrcode-canvas");
+
+	qr.drawCanvas(6, border, canvas);
+	//canvas.removeProperty("display");
+</script>
+
+@*<script type="text/javascript">
+	jQuery(document).ready(function (e) {
+		jQuery('#mymodal').trigger('click');
+	});
+</script>*@
