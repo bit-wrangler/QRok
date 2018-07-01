@@ -4,6 +4,22 @@
 	Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<style>
+
+	.chart div {
+		font: 10px sans-serif;
+		background-color: steelblue;
+		text-align: right;
+		padding: 3px;
+		margin: 1px;
+		color: white;
+	}
+</style>
+
+<script type="text/javascript" src="~/js/knockout-3.4.2.js"></script>
+<script type="text/javascript" src="~/js/KOViewModels/SurveyOption.js"></script>
+<script type="text/javascript" src="~/js/KOViewModels/Survey.js"></script>
+
 <h2>@Model.Title</h2>
 
 <button type="button" id="mymodal" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
@@ -28,6 +44,45 @@
 	</div>
 </div>
 
+@{bool votingActive = (DateTime.Now < Model.CloseDateTime); }
+@{const int MaxBarWidth = 200; }
+@{
+	int maxCount = Model.SurveyOptions.Max(so => so.Count);
+	if (maxCount == 0) { maxCount = 1; }
+}
+
+
+@{
+	int BarWidth(int count)
+	{
+		return (int)((float)MaxBarWidth * (float)count / (float)maxCount);
+	}
+}
+
+
+<table style="padding: 10px;">
+	@foreach (var option in Model.SurveyOptions)
+	{
+		<tr>
+			<td>
+				@if (votingActive)
+				{
+					<button class="btn btn-primary btn-block">@option.Title</button>
+				}
+				else
+				{
+					<strong>@option.Title</strong>
+				}
+			</td>
+			<td style="padding: 10px;">@option.Count</td>
+			<td class="chart">
+				<div style="width: @(BarWidth(option.Count))px;">@option.Count</div>
+			</td>
+		</tr>
+	}
+</table>
+
+
 <script type="text/javascript" src="~/js/qrcodegen.js"></script>
 
 <script type="text/javascript">
@@ -46,11 +101,13 @@
 	var canvas = document.getElementById("qrcode-canvas");
 
 	qr.drawCanvas(6, border, canvas);
-	//canvas.removeProperty("display");
 </script>
 
-@*<script type="text/javascript">
-	jQuery(document).ready(function (e) {
-		jQuery('#mymodal').trigger('click');
-	});
-</script>*@
+<script type="text/javascript">
+	ko.applyBindings(new Survey(@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model,
+							   Newtonsoft.Json.Formatting.None,
+							   new Newtonsoft.Json.JsonSerializerSettings()
+							   {
+								   ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+							   }))));
+</script>

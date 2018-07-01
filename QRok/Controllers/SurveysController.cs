@@ -88,6 +88,8 @@ namespace QRok.Controllers
                         new Microsoft.AspNetCore.Http.CookieOptions { Expires = survey.DeleteDateTime });
             }
 
+            survey.SurveyOptions = survey.SurveyOptions.OrderBy(so => so.OptionNumber).ToList();
+
             if (valid)
                 return View(survey);
             else
