@@ -8,11 +8,13 @@ using QRok.ViewModels;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
 
 namespace QRok.Controllers
 {
     public class SurveysController : Controller
     {
+
         public IActionResult Index(string surveyJson)
         {
             var survey = (surveyJson==null) ?
@@ -31,16 +33,43 @@ namespace QRok.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(string data)
+        public IActionResult Create(string surveyJson, [FromServices] QRokContext qRokContext)
         {
+            var surveys = qRokContext.Surveys;
+            var survey = JsonConvert.DeserializeObject<Survey>(surveyJson);
+
+            var options = new List<SurveyOption>();
+            foreach (var option in survey.SurveyOptions) options.Add(new SurveyOption
+            {
+                Count = 0,
+                OptionNumber = option.OptionNumber,
+                Title = option.Title
+            });
+
+
+            var newSurvey = new Survey
+            {
+                Title = survey.Title,
+                Guid = Guid.NewGuid(),
+                CloseDateTime = DateTime.Now.AddMinutes(5),
+                DeleteDateTime = DateTime.Now.AddHours(1),
+                SurveyOptions = options
+            };
+            surveys.Add(newSurvey);
+            qRokContext.SaveChanges();
+
+            Response.Cookies.Append(newSurvey.Id.ToString(),newSurvey.Guid.ToString(),new Microsoft.AspNetCore.Http.CookieOptions { Expires = newSurvey.DeleteDateTime});
+
             return RedirectToAction(
-                "Index",
-                new {surveyJson = JsonConvert.SerializeObject(JsonConvert.DeserializeObject<Survey>(data)) }
+                "Details",
+                new {id = newSurvey.Id}
             );
 
-            //return Content(
-            //    JsonConvert.SerializeObject(JsonConvert.DeserializeObject<Survey>(data).SurveyOptions)
-            //    );
+        }
+
+        public IActionResult Details(int id, [FromServices] QRokContext qRokContext)
+        {
+            return View(qRokContext.Surveys.Include(s=>s.SurveyOptions).Single(s => s.Id == id));
         }
 
     }

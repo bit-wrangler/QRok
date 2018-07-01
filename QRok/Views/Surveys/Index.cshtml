@@ -42,7 +42,7 @@
 			var form = document.getElementById("form");
 			var hiddenField = document.createElement("input");
 			hiddenField.setAttribute("type", "hidden");
-			hiddenField.setAttribute("name", "data");
+			hiddenField.setAttribute("name", "surveyJson");
 			hiddenField.setAttribute("value", ko.toJSON(self.Survey));
 
 			form.appendChild(hiddenField);
