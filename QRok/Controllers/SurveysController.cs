@@ -96,5 +96,35 @@ namespace QRok.Controllers
                 return BadRequest();
         }
 
+        public IActionResult Vote(SurveyOption surveyOption, [FromServices] QRokContext qRokContext)
+        {
+            var survey = qRokContext.Surveys.Include(s => s.SurveyOptions).Single(s => s.Id == surveyOption.SurveyId);
+            bool valid = false;
+            bool voted = false;
+
+            if (Request.Cookies.ContainsKey(string.Format("guid:{0}", surveyOption.SurveyId.ToString())))
+                valid = Request.Cookies[string.Format("guid:{0}", surveyOption.SurveyId.ToString())].Equals(survey.Guid.ToString());
+
+            if (Request.Cookies.ContainsKey(string.Format("voted:{0}", surveyOption.SurveyId.ToString())))
+                voted = Request.Cookies[string.Format("voted:{0}", surveyOption.SurveyId.ToString())].Equals("yes");
+
+            if (valid && !voted)
+            {
+                Response.Cookies.Append(
+                    string.Format("voted:{0}", surveyOption.SurveyId.ToString()),
+                    "yes",
+                    new Microsoft.AspNetCore.Http.CookieOptions { Expires = survey.DeleteDateTime });
+                qRokContext
+                    .SurveyOptions
+                    .Single(so => 
+                            so.SurveyId == surveyOption.SurveyId 
+                            && so.OptionNumber == surveyOption.OptionNumber)
+                    .Count++;
+                qRokContext.SaveChanges();
+            }
+            return RedirectToAction("Details", new { id = survey.Id });
+
+        }
+
     }
 }
