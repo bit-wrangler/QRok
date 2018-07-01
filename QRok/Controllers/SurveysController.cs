@@ -58,7 +58,10 @@ namespace QRok.Controllers
             surveys.Add(newSurvey);
             qRokContext.SaveChanges();
 
-            Response.Cookies.Append(newSurvey.Id.ToString(),newSurvey.Guid.ToString(),new Microsoft.AspNetCore.Http.CookieOptions { Expires = newSurvey.DeleteDateTime});
+            Response.Cookies.Append(
+                string.Format("guid:{0}",newSurvey.Id.ToString()), 
+                newSurvey.Guid.ToString(),
+                new Microsoft.AspNetCore.Http.CookieOptions { Expires = newSurvey.DeleteDateTime});
 
             return RedirectToAction(
                 "Details",
@@ -67,9 +70,28 @@ namespace QRok.Controllers
 
         }
 
-        public IActionResult Details(int id, [FromServices] QRokContext qRokContext)
+        public IActionResult Details(int id, string guid, [FromServices] QRokContext qRokContext)
         {
-            return View(qRokContext.Surveys.Include(s=>s.SurveyOptions).Single(s => s.Id == id));
+            var survey = qRokContext.Surveys.Include(s => s.SurveyOptions).Single(s => s.Id == id);
+            bool valid = false;
+
+            if (Request.Cookies.ContainsKey(string.Format("guid:{0}", id.ToString())))
+                valid = Request.Cookies[string.Format("guid:{0}", id.ToString())].Equals(survey.Guid.ToString());
+
+            if (guid != null && !valid)
+            {
+                valid = guid.Equals(survey.Guid.ToString());
+                if (valid)
+                    Response.Cookies.Append(
+                        string.Format("guid:{0}", id.ToString()),
+                        guid,
+                        new Microsoft.AspNetCore.Http.CookieOptions { Expires = survey.DeleteDateTime });
+            }
+
+            if (valid)
+                return View(survey);
+            else
+                return BadRequest();
         }
 
     }
