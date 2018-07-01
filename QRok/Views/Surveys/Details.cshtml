@@ -44,7 +44,10 @@
 	</div>
 </div>
 
-@{bool votingActive = (DateTime.Now < Model.CloseDateTime); }
+
+@{
+	bool votingActive = (DateTime.Now < Model.CloseDateTime) 
+		&& !(Context.Request.Cookies.ContainsKey(string.Format("voted:{0}", Model.Id.ToString()))); }
 @{const int MaxBarWidth = 200; }
 @{
 	int maxCount = Model.SurveyOptions.Max(so => so.Count);
