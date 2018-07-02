@@ -15,6 +15,14 @@ namespace QRok.Controllers
     public class SurveysController : Controller
     {
 
+        private QRokContext _context;
+
+        public SurveysController(QRokContext dbContext)
+            : base()
+        {
+            _context = dbContext;
+        }
+
         public IActionResult Index(string surveyJson)
         {
             var survey = (surveyJson==null) ?
@@ -33,9 +41,9 @@ namespace QRok.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(string surveyJson, [FromServices] QRokContext qRokContext)
+        public IActionResult Create(string surveyJson)
         {
-            var surveys = qRokContext.Surveys;
+            var surveys = _context.Surveys;
             var survey = JsonConvert.DeserializeObject<Survey>(surveyJson);
 
             var options = new List<SurveyOption>();
@@ -56,7 +64,7 @@ namespace QRok.Controllers
                 SurveyOptions = options
             };
             surveys.Add(newSurvey);
-            qRokContext.SaveChanges();
+            _context.SaveChanges();
 
             Response.Cookies.Append(
                 string.Format("guid:{0}",newSurvey.Id.ToString()), 
@@ -70,9 +78,9 @@ namespace QRok.Controllers
 
         }
 
-        public IActionResult Details(int id, string guid, [FromServices] QRokContext qRokContext)
+        public IActionResult Details(int id, string guid)
         {
-            var survey = qRokContext.Surveys.Include(s => s.SurveyOptions).Single(s => s.Id == id);
+            var survey = _context.Surveys.Include(s => s.SurveyOptions).Single(s => s.Id == id);
             bool valid = false;
 
             if (Request.Cookies.ContainsKey(string.Format("guid:{0}", id.ToString())))
@@ -96,9 +104,9 @@ namespace QRok.Controllers
                 return BadRequest();
         }
 
-        public IActionResult Vote(SurveyOption surveyOption, [FromServices] QRokContext qRokContext)
+        public IActionResult Vote(SurveyOption surveyOption)
         {
-            var survey = qRokContext.Surveys.Include(s => s.SurveyOptions).Single(s => s.Id == surveyOption.SurveyId);
+            var survey = _context.Surveys.Include(s => s.SurveyOptions).Single(s => s.Id == surveyOption.SurveyId);
             bool valid = false;
             bool voted = false;
 
@@ -114,13 +122,13 @@ namespace QRok.Controllers
                     string.Format("voted:{0}", surveyOption.SurveyId.ToString()),
                     "yes",
                     new Microsoft.AspNetCore.Http.CookieOptions { Expires = survey.DeleteDateTime });
-                qRokContext
+                _context
                     .SurveyOptions
                     .Single(so => 
                             so.SurveyId == surveyOption.SurveyId 
                             && so.OptionNumber == surveyOption.OptionNumber)
                     .Count++;
-                qRokContext.SaveChanges();
+                _context.SaveChanges();
             }
             return RedirectToAction("Details", new { id = survey.Id });
 
