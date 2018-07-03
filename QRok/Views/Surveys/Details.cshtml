@@ -1,4 +1,4 @@
-﻿@model QRok.Models.Survey
+﻿@model QRok.Controllers.Resources.SurveyResource
 @{
 	ViewData["Title"] = "View";
 	Layout = "~/Views/Shared/_Layout.cshtml";
@@ -108,10 +108,5 @@
 </script>
 
 <script type="text/javascript">
-	ko.applyBindings(new Survey(@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model,
-							   Newtonsoft.Json.Formatting.None,
-							   new Newtonsoft.Json.JsonSerializerSettings()
-							   {
-								   ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-							   }))));
+	ko.applyBindings(new Survey(@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model))));
 </script>

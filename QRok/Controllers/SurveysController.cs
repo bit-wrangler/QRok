@@ -9,6 +9,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using QRok.Controllers.Resources;
 
 namespace QRok.Controllers
 {
@@ -16,11 +18,13 @@ namespace QRok.Controllers
     {
 
         private QRokContext _context;
+        private readonly IMapper mapper;
 
-        public SurveysController(QRokContext dbContext)
+        public SurveysController(QRokContext dbContext, IMapper mapper)
             : base()
         {
             _context = dbContext;
+            this.mapper = mapper;
         }
 
         public IActionResult Index(string surveyJson)
@@ -37,7 +41,7 @@ namespace QRok.Controllers
                 }
                     :
                 JsonConvert.DeserializeObject<Survey>(surveyJson);
-            return View(survey);
+            return View(mapper.Map<Survey,SurveyResource>(survey));
         }
 
         [HttpPost]
@@ -99,12 +103,12 @@ namespace QRok.Controllers
             survey.SurveyOptions = survey.SurveyOptions.OrderBy(so => so.OptionNumber).ToList();
 
             if (valid)
-                return View(survey);
+                return View(mapper.Map<Survey,SurveyResource>(survey));
             else
                 return BadRequest();
         }
 
-        public IActionResult Vote(SurveyOption surveyOption)
+        public IActionResult Vote(SurveyOptionResource surveyOption)
         {
             var survey = _context.Surveys.Include(s => s.SurveyOptions).Single(s => s.Id == surveyOption.SurveyId);
             bool valid = false;

@@ -7,6 +7,7 @@ namespace QRok.Controllers.Resources
 {
     public class SurveyOptionResource
     {
+        public int SurveyId { get; set; }
 
         public int OptionNumber { get; set; }
 
