@@ -13,7 +13,8 @@ namespace QRok.Controllers
     {
         public IActionResult Index()
         {
-            return View();
+            //return View();
+            return RedirectToAction("Index", "Surveys");
         }
 
         public IActionResult About()
